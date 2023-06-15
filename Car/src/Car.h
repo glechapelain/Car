@@ -6,6 +6,8 @@
 template <typename T>
 class Circuit;
 
+class Graphics;
+
 template <typename Units>
 class Car {
 public:
@@ -22,8 +24,10 @@ public:
 
     void initializPosition(Circuit<Units> const& circuit, int player = 0, int numPlayers = 1);
 
-private:
+    std::unique_ptr<Graphics>  graphics;
 
+private:
+    
     Vector2d<Units> position;
     Vector2d<Units> velocity;
 };

@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Car.h" />
+    <ClInclude Include="src\Model.h" />
     <ClInclude Include="src\Track.h" />
   </ItemGroup>
   <ItemGroup>
@@ -20,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="src\Circuit.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Model.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

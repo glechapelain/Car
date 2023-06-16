@@ -32,7 +32,7 @@ public:
    
     Vector2d<T>
     getStartPosition(int player = 0, int numPlayers = 1) const;
-    bool intersect(Vector2d<T> const &point1, Vector2d<T> const &point2) const;
+    bool intersect(Vector2d<T> const &point1, Vector2d<T> const &point2, Vector2d<float>& positionOfImpact) const;
     bool crossingCheckpoint(Vector2d<float> const& position, Vector2d<float> const& nextPosition) const
     {
         return crossingWaypoint(mWaypoints.size() / 2, position, nextPosition);

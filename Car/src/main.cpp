@@ -6,6 +6,7 @@
 
 #include "Car.h"
 #include "Model.h"
+#include "Particle.h"
 #include "Track.h"
 
 enum eStage {
@@ -32,6 +33,8 @@ SetCameraForMenu(Camera& camera)
 const int screenHeight = 450;
 const int screenWidth = 800;
 
+float carScale = 5.f;
+
 void
 SetCameraForGame(Camera& camera)
 {
@@ -57,12 +60,9 @@ int main(void)
 	int currentPlayer = 0; // Player currently interacting (for selection & game screen.)
 
     Car<int> car; // Should be changed to `cars' ?
-    Vector2d<float> v1(0.f, 0.f);
-    Vector2d<float> v2(1.f, 1.f);
-    Vector2d<float> v3(0.f, 1.f);
-    Vector2d<float> v4(1.f, 0.f);
+	std::list<Particle> particles;
 
-    InitWindow(screenWidth, screenHeight, "raylib [core] example - 2d camera");
+	InitWindow(screenWidth, screenHeight, "raylib [core] example - 2d camera");
     SetTargetFPS(60);						  // Set our game to run at 60 frames-per-second
 
 	std::list<Graphics> models;
@@ -180,12 +180,27 @@ int main(void)
 				for (int i = 1; i <= 9; ++i)
 					if (IsKeyPressed(i + KEY_ZERO) || IsKeyPressed(i + KEY_KP_0))
 					{
+						Vector2d<float> positionOfImpact;
 						car.amendVelocity(i);
 						if (car.getNextPosition() != car.getPosition()
-							&& car.collidesWith(circuit))
+							&& car.collidesWith(circuit, positionOfImpact))
 						{
 							car.setPositionToClosestPointOnCircuit(circuit);
 							car.zeroSpeed();
+
+							int numOfParticlesToGenerate = GetRandomValue(60, 80);
+							while (numOfParticlesToGenerate > 0)
+							{
+								Vector3d<float> variation(float(GetRandomValue(60, 80))/70.f,
+									float(GetRandomValue(60, 80)) / 70.f,
+									float(GetRandomValue(60, 80)) / 70.f);
+								Vector3d<float> initialVelocity(car.getVelocity().x, car.getVelocity().y, 1.f);
+								initialVelocity *= variation;
+								Vector3d<float> positionOfImpact3D(positionOfImpact.x, positionOfImpact.y, 1.f * carScale);
+								particles.emplace_back(positionOfImpact3D, initialVelocity * float(gridUnit), float(GetRandomValue(32, 55)) / 10.f);
+
+								--numOfParticlesToGenerate;
+							}
 						}
 						car.update(circuit);
 						if (car.isFinished())
@@ -214,9 +229,22 @@ int main(void)
 
 				BeginMode3D(camera);
 				{
+					// render particle shadows
+					Vector3d/* just 3 for the maths. */<float> lightDirection = {.4f, .3f, .0f};
+					for (Particle const& particle : particles)
+					{
+						Vector3d<float> shadowPosition = particle.getPosition() + lightDirection * particle.getPosition().z;
+						DrawCircle(shadowPosition.x, shadowPosition.y, 1.f, DARKGRAY);
+					}
+
 					//for (auto const& car : cars)
 					{
-						car.graphics->Render(Vector3{ float(car.getPosition().x * gridUnit), .5f, float(car.getPosition().y * gridUnit)}, car.getOrientation(), 5.f);
+						car.graphics->Render(Vector3{ float(car.getPosition().x * gridUnit), .5f, float(car.getPosition().y * gridUnit)}, car.getOrientation(), carScale);
+					}
+
+					for (Particle const& particle : particles)
+					{
+						DrawCircle(particle.getPosition().x, particle.getPosition().y, 1.f, ORANGE);
 					}
 				}
 				EndMode3D();

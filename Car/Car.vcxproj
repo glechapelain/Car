@@ -13,6 +13,7 @@
   <ItemGroup>
     <ClInclude Include="src\Car.h" />
     <ClInclude Include="src\Model.h" />
+    <ClInclude Include="src\Particle.h" />
     <ClInclude Include="src\Track.h" />
     <ClInclude Include="src\Utils.h" />
   </ItemGroup>
@@ -23,6 +24,7 @@
     <ClCompile Include="src\Circuit.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Model.cpp" />
+    <ClCompile Include="src\Particle.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

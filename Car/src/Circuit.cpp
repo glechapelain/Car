@@ -117,13 +117,17 @@ Circuit<T>::getStartPosition(int player/*= 0 */, int numPlayers/* = 1*/) const
 
 template <typename T>
 bool
-Circuit<T>::intersect(Vector2d<T> const& point1, Vector2d<T> const& point2) const
+Circuit<T>::intersect(Vector2d<T> const& point1, Vector2d<T> const& point2, Vector2d<float>& positionOfImpact) const
 {
     struct {
         bool
         operator()(Vector2d<float> const& previousPosition, Vector2d<float> const& position)
         {
-            result |= Intersect(previousPosition, position, point1 * gridUnit, point2 * gridUnit);
+            if (Intersect(previousPosition, position, point1 * gridUnit, point2 * gridUnit))
+            {
+                positionOfImpact = GetIntersect(previousPosition, position, point1 * gridUnit, point2 * gridUnit);
+                result = true;
+            }
             return result;
         }
 
@@ -133,9 +137,10 @@ Circuit<T>::intersect(Vector2d<T> const& point1, Vector2d<T> const& point2) cons
             return false;
         }
 
+        Vector2d<float>& positionOfImpact;
         bool result = false;
         Vector2d<float> point1, point2;
-    } collisionFunctor;
+    } collisionFunctor = { positionOfImpact };
     collisionFunctor.point1 = toVecFloat(point1);
     collisionFunctor.point2 = toVecFloat(point2);
     run(collisionFunctor);
@@ -160,5 +165,5 @@ Circuit<T>::crossingWaypoint(size_t numWaypoint, Vector2d<float> const& point1, 
 
 template void Circuit<int>::render() const;
 template Vector2d<int> Circuit<int>::getStartPosition(int player /*= 0 */ , int numPlayers /* = 1 */ ) const;
-template bool Circuit<int>::intersect(Vector2d<int> const& point1, Vector2d<int> const& point2) const;
+template bool Circuit<int>::intersect(Vector2d<int> const& point1, Vector2d<int> const& point2, Vector2d<float>& positionOfImpact) const;
 template bool Circuit<int>::crossingWaypoint(size_t numWaypoint, Vector2d<float> const& point1, Vector2d<float> const& point2) const;

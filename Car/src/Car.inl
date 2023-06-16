@@ -78,11 +78,11 @@ Vector2d<Units> const& Car<Units>::getNextPosition() const {
 }
 
 template <typename Units>
-bool Car<Units>::collidesWith(Circuit<Units> const& circuit) const
+bool Car<Units>::collidesWith(Circuit<Units> const& circuit, Vector2d<float> &positionOfImpact) const
 {
     Vector2d<Units> nextPosition = position + velocity;
 
-    return circuit.intersect(position, nextPosition);
+    return circuit.intersect(position, nextPosition, positionOfImpact);
 }
 
 template <typename Units>

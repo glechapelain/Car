@@ -29,6 +29,20 @@ SetCameraForMenu(Camera& camera)
 	UpdateCamera(&camera, CAMERA_FREE);
 }
 
+const int screenHeight = 450;
+const int screenWidth = 800;
+
+void
+SetCameraForGame(Camera& camera)
+{
+	camera.position = { screenWidth / 2.f, 15.0f, screenHeight / 2.f };   // Camera position
+	camera.target = { screenWidth / 2.f, -3.5f, screenHeight / 2.f };     // Camera looking at point
+	camera.up = { 0.0f, 0.0f, -1.0f };         // Camera up vector (rotation towards target)
+	camera.projection = CAMERA_ORTHOGRAPHIC;             // Camera mode type
+	camera.fovy = float(screenHeight);             // Camera field-of-view Y
+	UpdateCamera(&camera, CAMERA_FREE);
+}
+
 template <typename Units>
 bool
 IsCarFinished(Car<Units> const &car)
@@ -38,8 +52,6 @@ IsCarFinished(Car<Units> const &car)
 
 int main(void)
 {
-    const int screenWidth = 800;
-    const int screenHeight = 450;
 
     eStage currentStage = eStage_numPlayerSelect;
 	int currentPlayer = 0; // Player currently interacting (for selection & game screen.)
@@ -117,6 +129,7 @@ int main(void)
 					{
 						currentPlayer = 1;
 						currentStage = eStage_Game;
+						SetCameraForGame(camera);
 					}
 					++currentPlayer;
 				}
@@ -191,15 +204,12 @@ int main(void)
 							++currentPlayer;
 					}
 			
-				for (int i = 0; i <= screenWidth; i += gridUnit)
+				BeginMode3D(camera);
 				{
-					DrawLine(i, 0, i, screenHeight, BLACK);
+					DrawGrid(80, gridUnit);         // Draw a grid
 				}
+				EndMode3D();
 
-				for (int j = 0; j <= screenHeight; j += gridUnit)
-				{
-					DrawLine(0, j, screenWidth, j, BLACK);
-				}
 				circuit.render();
 				//for (auto const& car : cars)
 				{

@@ -191,6 +191,7 @@ int main(void)
 				if (!!IsCarFinished(car))
 				{
 					currentStage = eStage_WrapUpScreen;
+					SetCameraForMenu(camera);
 				}
 			
 				for (int i = 0; i <= screenWidth; i += gridUnit)
@@ -214,10 +215,24 @@ int main(void)
 			case eStage_WrapUpScreen:
 			{
 				if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE)) {
-					SetCameraForMenu(camera);
 					currentStage = eStage_numPlayerSelect;
 					finishOrder.clear();
 				}
+				DrawText("RANKING", 10, 10, 20, BLUE);
+
+				BeginMode3D(camera);
+				{
+					static float angle = 10.f;
+					angle += GetFrameTime() * selectionMenuRotationSpeed;
+
+					int i = 0;
+					for (int winner : finishOrder)
+					{
+						car/*s[winner]*/.graphics->Render(Vector3{ 0.f, 5.f - 1.2f * float(i), 0.f}, angle);
+						++i;
+					}
+				}
+				EndMode3D();
 			}
 			break;
 			}

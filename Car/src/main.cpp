@@ -84,7 +84,8 @@ int main(void)
 					{
 						//cars.resize(i);
 
-						car.initializPosition(circuit);
+						//for(int cari = 0; cari < cars.size(); ++cari)
+							car/*s[cari]*/.initializPosition(circuit/*, cari, cars.size() Would be nice having that working*/);
 
 						currentStage = eStage_CarSelect;
 						currentPlayer = 1;
@@ -107,7 +108,7 @@ int main(void)
 						selectedModel = models.begin();
 				}
 				else if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE)) {
-					car.graphics = std::make_unique<Graphics>(std::move(*selectedModel));
+					car/*s[currentPlayer-1]*/.graphics = std::make_unique<Graphics>(std::move(*selectedModel));
 					selectedModel = models.erase(selectedModel);
 					if (models.end() == selectedModel)
 						selectedModel = models.begin();
@@ -162,37 +163,33 @@ int main(void)
 			break;
 			case eStage_Game:
 			{
+				// Car<int>& car = cars[currentPlayer-1];
 				for (int i = 1; i <= 9; ++i)
 					if (IsKeyPressed(i + KEY_ZERO) || IsKeyPressed(i + KEY_KP_0))
 					{
-						car/*s[currentPlayer]*/.amendVelocity(i);
+						car.amendVelocity(i);
 						if (car.getNextPosition() != car.getPosition()
 							&& car.collidesWith(circuit))
 						{
 							car.setPositionToClosestPointOnCircuit(circuit);
 							car.zeroSpeed();
 						}
-						car/*s[currentPlayer]*/.update(circuit);
+						car.update(circuit);
 						if (car.isFinished())
 						{
 							finishOrder.push_back(currentPlayer);
+
+							//if (!std::any_of(cars.begin(), cars.end(), [](auto const& car) {return !IsCarFinished(car); }))
+							if (!!IsCarFinished(car))
+							{
+								currentStage = eStage_WrapUpScreen;
+								SetCameraForMenu(camera);
+							}
 						}
 
-						do {
-						++currentPlayer;
-						} while (car/*s[currentPlayer]*/.isFinished() && currentPlayer < 8 /* just to have an end condition with only one player */);
-						//if (cars.size() == currentPlayer)
-						{
-							currentPlayer = 0;
-						}
+						while(finishOrder.end() != std::find(finishOrder.begin(), finishOrder.end(), currentPlayer))
+							++currentPlayer;
 					}
-
-				//if(!std::any_of(cars.begin(), cars.end(), !IsCarFinished))
-				if (!!IsCarFinished(car))
-				{
-					currentStage = eStage_WrapUpScreen;
-					SetCameraForMenu(camera);
-				}
 			
 				for (int i = 0; i <= screenWidth; i += gridUnit)
 				{

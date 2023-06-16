@@ -8,7 +8,7 @@ public:
 	Graphics(std::string const& filename, std::string const& texturename);
 	Graphics(Graphics const&);
 
-	void Render(Vector3 const &position, float angle) const;
+	void Render(Vector3 const &position, float angle, float scale = 1.f) const;
 	virtual ~Graphics();
 
 private:
@@ -20,6 +20,6 @@ private:
 
 	void Load();
 
-	std::string const& mFileName;
-	std::string const& mTextureName;
+	std::string const mFileName;
+	std::string const mTextureName;
 };

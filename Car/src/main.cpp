@@ -211,11 +211,19 @@ int main(void)
 				EndMode3D();
 
 				circuit.render();
+
+				BeginMode3D(camera);
+				{
+					//for (auto const& car : cars)
+					{
+						car.graphics->Render(Vector3{ float(car.getPosition().x * gridUnit), .5f, float(car.getPosition().y * gridUnit)}, car.getOrientation(), 5.f);
+					}
+				}
+				EndMode3D();
+
 				//for (auto const& car : cars)
 				{
 					DrawLine(gridUnit * car.getPosition().x, gridUnit * car.getPosition().y, gridUnit * car.getNextPosition().x, gridUnit * car.getNextPosition().y, BLUE);
-
-					DrawRectangle(gridUnit * car.getPosition().x - 10, gridUnit * car.getPosition().y - 10, gridUnit, gridUnit, RED);
 				}
 			}
 			break;

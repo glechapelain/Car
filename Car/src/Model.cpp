@@ -25,12 +25,12 @@ void Graphics::Load()
     mResources.model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = mResources.texture;
 }
 
-void Graphics::Render(Vector3 const& position, float angle) const
+void Graphics::Render(Vector3 const& position, float angle, float scale /* = 1.f */) const
 {
     Vector3 up = { 0.f, 1.f, 0.f };
-    Vector3 scale = { 1.f, 1.f, 1.f };
+    Vector3 vscale = { scale, scale, scale };
 
-    DrawModelEx(mResources.model, position, up, angle, scale, WHITE);             // Draw 3d model with texture
+    DrawModelEx(mResources.model, position, up, angle, vscale, WHITE);             // Draw 3d model with texture
 }
 
 Graphics::~Graphics() {

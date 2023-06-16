@@ -17,6 +17,10 @@ public:
     void update(Circuit<Units> const& circuit);
     Vector2d<Units> const &getPosition() const;
     Vector2d<Units> const &getNextPosition() const;
+    float getOrientation() const
+    {
+        return - /* reference is left-handed ? */ atan2f(velocity.y, velocity.x) * RAD2DEG;
+    }
 
     bool collidesWith(Circuit<Units> const& circuit) const;
     void setPositionToClosestPointOnCircuit(Circuit<Units> const& circuit);

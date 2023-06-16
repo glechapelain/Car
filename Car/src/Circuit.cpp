@@ -4,6 +4,7 @@
 #include <raylib.h>
 
 #include "Track.h"
+#include "Utils.h"
 
 std::vector<WayPoint<int>> idontunderstand = {
     WayPoint<int>{ { 90 , 150 },
@@ -44,8 +45,6 @@ std::vector<WayPoint<int>> idontunderstand = {
 
 Circuit<int> circuit(idontunderstand);
 
-Vector2d<float> toVecFloat(Vector2d<int> a) { return Vector2d<float>(a.x, a.y); }
-
 template <typename T> template< class ExecuteOnLine>
 void Circuit<T>::run(ExecuteOnLine &doSomething) const
 {
@@ -62,13 +61,13 @@ void Circuit<T>::run(ExecuteOnLine &doSomething) const
         for(size_t i = 0; i<=mWaypoints.size();++i)
         {
             WayPoint<int> const& wp = mWaypoints[i % mWaypoints.size()];
-            Vector2d<float> center = toVecFloat(wp.center) * 2;
+            Vector2d<float> center = toVecFloat(wp.center) * 2 * mFactor;
 #ifdef USE_MATHLIB
             Vector2d<float> ref(cos(wp.alpha * 3.14 / 180), -sin(wp.alpha * 3.14 / 180) );
-            Vector2d<float> position = center + ref * sign * wp.width / 5.f;
+            Vector2d<float> position = center + ref * sign * mFactor * wp.width / 5.f;
 #else
             Vector2 ref = { cos(wp.alpha * 3.14 / 180), -sin(wp.alpha * 3.14 / 180) };
-            Vector2 position = { center.x + sign * ref.x * wp.width / 5.f, center.y + sign * ref.y * wp.width / 5.f };
+            Vector2 position = { center.x + sign * ref.x * wp.width / 5.f, center.y + sign * mFactor * ref.y * wp.width / 5.f };
 #endif
 
             if (previousPositionSet)
@@ -95,7 +94,7 @@ void Circuit<T>::render() const     // <- Delete-me.
         {
             Vector2d<T> center = wp.center * 2;
             Vector2 ref = { cos(wp.alpha * 3.14 / 180), -sin(wp.alpha * 3.14 / 180) };
-            Vector2 position = { center.x + sign * ref.x * wp.width / 5.f, center.y + sign * ref.y * wp.width / 5.f };
+            Vector2 position = { center.x + sign * ref.x * wp.width / 5.f, center.y + sign * mFactor * ref.y * wp.width / 5.f };
 
             if (previousPositionSet)
             {
@@ -124,7 +123,7 @@ Circuit<T>::intersect(Vector2d<T> const& point1, Vector2d<T> const& point2) cons
         bool
         operator()(Vector2d<float> const& previousPosition, Vector2d<float> const& position)
         {
-            result |= Intersect(previousPosition, position, point1 * 20., point2 * 20.);
+            result |= Intersect(previousPosition, position, point1 * gridUnit, point2 * gridUnit);
             return result;
         }
 
@@ -143,7 +142,23 @@ Circuit<T>::intersect(Vector2d<T> const& point1, Vector2d<T> const& point2) cons
     return collisionFunctor.result;
 }
 
+template <typename T>
+bool
+Circuit<T>::crossingWaypoint(size_t numWaypoint, Vector2d<float> const& point1, Vector2d<float> const& point2) const {
+    WayPoint<int> const& wp = mWaypoints[numWaypoint % mWaypoints.size()];
+    Vector2d<float> center = toVecFloat(wp.center) * 2;
+    Vector2d<float> ref(cos(wp.alpha * 3.14 / 180), -sin(wp.alpha * 3.14 / 180));
+
+    Vector2d<float> sides[2 /* left|right */] =
+    {
+        center + ref * (-1.f) * mFactor * wp.width / 5.f,
+        center + ref * ( 1.f) * mFactor * wp.width / 5.f,
+    };
+
+    return Intersect(sides[0 /*left*/], sides[1 /*right*/], point1 * float(gridUnit), point2 * float(gridUnit));
+}
 
 template void Circuit<int>::render() const;
 template Vector2d<int> Circuit<int>::getStartPosition(int player /*= 0 */ , int numPlayers /* = 1 */ ) const;
 template bool Circuit<int>::intersect(Vector2d<int> const& point1, Vector2d<int> const& point2) const;
+template bool Circuit<int>::crossingWaypoint(size_t numWaypoint, Vector2d<float> const& point1, Vector2d<float> const& point2) const;

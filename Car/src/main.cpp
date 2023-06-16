@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <list>
 
 #include <raylib.h>
@@ -16,6 +17,24 @@ enum eStage {
 
 constexpr int NUM_CAR_MODELS = 8;
 static float selectionMenuRotationSpeed = 50.f;// Degree / sec.
+
+void
+SetCameraForMenu(Camera& camera)
+{
+	camera.position = { 0.0f, 15.0f, 25.0f };  // Camera position
+	camera.target = { 0.0f, -3.5f, 0.0f };     // Camera looking at point
+	camera.up = { 0.0f, 1.0f, 0.0f };          // Camera up vector (rotation towards target)
+	camera.fovy = 45.0f;                                // Camera field-of-view Y
+	camera.projection = CAMERA_PERSPECTIVE;             // Camera mode type
+	UpdateCamera(&camera, CAMERA_FREE);
+}
+
+template <typename Units>
+bool
+IsCarFinished(Car<Units> const &car)
+{
+	return car.isFinished();
+}
 
 int main(void)
 {
@@ -45,14 +64,10 @@ int main(void)
 	}
 
 	Camera camera = { 0 };
-	camera.position = { 0.0f, 15.0f, 25.0f };  // Camera position
-	camera.target = { 0.0f, -3.5f, 0.0f };     // Camera looking at point
-	camera.up = { 0.0f, 1.0f, 0.0f };          // Camera up vector (rotation towards target)
-	camera.fovy = 45.0f;                                // Camera field-of-view Y
-	camera.projection = CAMERA_PERSPECTIVE;             // Camera mode type
-	UpdateCamera(&camera, CAMERA_FREE);
+	SetCameraForMenu(camera);
 
 	auto selectedModel = models.begin();
+	std::list<int> finishOrder;
 
     // Main game loop
     while (!WindowShouldClose())        // Detect window close button or ESC key
@@ -157,35 +172,54 @@ int main(void)
 							car.setPositionToClosestPointOnCircuit(circuit);
 							car.zeroSpeed();
 						}
-						car/*s[currentPlayer]*/.update();
+						car/*s[currentPlayer]*/.update(circuit);
+						if (car.isFinished())
+						{
+							finishOrder.push_back(currentPlayer);
+						}
 
+						do {
 						++currentPlayer;
+						} while (car/*s[currentPlayer]*/.isFinished() && currentPlayer < 8 /* just to have an end condition with only one player */);
 						//if (cars.size() == currentPlayer)
 						{
 							currentPlayer = 0;
 						}
 					}
+
+				//if(!std::any_of(cars.begin(), cars.end(), !IsCarFinished))
+				if (!!IsCarFinished(car))
+				{
+					currentStage = eStage_WrapUpScreen;
+				}
 			
-				for (int i = 0; i <= screenWidth; i += 20)
+				for (int i = 0; i <= screenWidth; i += gridUnit)
 				{
 					DrawLine(i, 0, i, screenHeight, BLACK);
 				}
 
-				for (int j = 0; j <= screenHeight; j += 20)
+				for (int j = 0; j <= screenHeight; j += gridUnit)
 				{
 					DrawLine(0, j, screenWidth, j, BLACK);
 				}
 				circuit.render();
 				//for (auto const& car : cars)
 				{
-					DrawLine(20 * car.getPosition().x, 20 * car.getPosition().y, 20 * car.getNextPosition().x, 20 * car.getNextPosition().y, BLUE);
+					DrawLine(gridUnit * car.getPosition().x, gridUnit * car.getPosition().y, gridUnit * car.getNextPosition().x, gridUnit * car.getNextPosition().y, BLUE);
 
-					DrawRectangle(20 * car.getPosition().x - 10, 20 * car.getPosition().y - 10, 20, 20, RED);
+					DrawRectangle(gridUnit * car.getPosition().x - 10, gridUnit * car.getPosition().y - 10, gridUnit, gridUnit, RED);
 				}
 			}
 			break;
 			case eStage_WrapUpScreen:
-				break;
+			{
+				if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE)) {
+					SetCameraForMenu(camera);
+					currentStage = eStage_numPlayerSelect;
+					finishOrder.clear();
+				}
+			}
+			break;
 			}
         }
         EndDrawing();

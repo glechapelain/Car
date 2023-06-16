@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Utils.h"
+
 template <typename Units>
 Car<Units>::Car(Units x, Units y, Units velocityX, Units velocityY)
     : position(x, y), velocity(velocityX, velocityY) {}
@@ -41,7 +43,27 @@ void Car<Units>::amendVelocity(int acceleration) {
 }
 
 template <typename Units>
-void Car<Units>::update() {
+void Car<Units>::update(Circuit<Units> const& circuit) {
+    Vector2d<float> positionFloat = toVecFloat(position);
+    Vector2d<float> nextPosition = positionFloat + toVecFloat(velocity);
+
+    switch (state)
+    {
+    case eState_starting:
+        if (circuit.crossingCheckpoint(positionFloat, nextPosition))
+            state = eState_halfway;
+        break;
+    case eState_halfway:
+        if (circuit.crossingFinishLine(positionFloat, nextPosition))
+        {
+            state = eState_finished;
+            velocity = Vector2d<int>();
+        }
+        break;
+    default:
+        assert(false); // We shouldn't update once finished
+    }
+
     position += velocity;
 }
 
@@ -78,4 +100,5 @@ template <typename Units>
 void Car<Units>::initializPosition(Circuit<Units> const& circuit, int player/*= 0 */, int numPlayers/* = 1*/)
 {
     position = circuit.getStartPosition(player, numPlayers);
+    state = eState_starting;
 }

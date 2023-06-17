@@ -1,4 +1,6 @@
 #include <algorithm>
+#include <chrono>
+#include <iostream>
 #include <list>
 
 #include <raylib.h>
@@ -185,7 +187,9 @@ int main(void)
 						if (car.getNextPosition() != car.getPosition()
 							&& car.collidesWith(circuit, positionOfImpact))
 						{
-							int numOfParticlesToGenerate = GetRandomValue(60, 80);
+							auto t = std::chrono::steady_clock::now();
+							std::chrono::nanoseconds precisely = std::chrono::nanoseconds::zero();
+							int numOfParticlesToGenerate = GetRandomValue(600, 800);
 							while (numOfParticlesToGenerate > 0)
 							{
 								Vector3d<float> variation(float(GetRandomValue(10, 130))/70.f,
@@ -194,10 +198,14 @@ int main(void)
 								Vector3d<float> initialVelocity(car.getVelocity().x, car.getVelocity().y, .15f);
 								initialVelocity *= variation;
 								Vector3d<float> positionOfImpact3D(positionOfImpact.x, positionOfImpact.y, .15f);
-								particles.emplace_back(positionOfImpact3D + (variation - Vector3d<float>(1.f, 1.f, 1.f)) * carScale, initialVelocity * float(gridUnit), float(GetRandomValue(8, 32)) / 10.f);
-
+								auto t = std::chrono::steady_clock::now();
+								particles.push_back(Particle(positionOfImpact3D + (variation - Vector3d<float>(1.f, 1.f, 1.f)) * carScale, initialVelocity * float(gridUnit), float(GetRandomValue(8, 32)) / 10.f));
+								precisely += std::chrono::steady_clock::now() - t;
 								--numOfParticlesToGenerate;
 							}
+							auto d = std::chrono::steady_clock::now() - t; //something took d time units
+							std::cout << "something took " << std::chrono::duration_cast<std::chrono::microseconds>(d).count() << "us" << std::endl; // print as milliseconds
+							std::cout << "including " << std::chrono::duration_cast<std::chrono::microseconds>(precisely).count() << "us" << std::endl; // print as milliseconds
 
 							car.setPositionToClosestPointOnCircuit(circuit);
 							car.zeroSpeed();

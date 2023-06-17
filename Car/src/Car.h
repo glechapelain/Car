@@ -17,7 +17,7 @@ public:
     void update(Circuit<Units> const& circuit);
     Vector2d<Units> const& getPosition() const;
     Vector2d<Units> const& getVelocity() const { return velocity; }
-    Vector2d<Units> const &getNextPosition() const;
+    Vector2d<Units>        getNextPosition() const;
     float getOrientation() const
     {
         return - /* reference is left-handed ? */ atan2f(velocity.y, velocity.x) * RAD2DEG;

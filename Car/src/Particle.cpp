@@ -21,7 +21,7 @@ Particle::update(float deltaTime)
 	position += velocity * deltaTime;
 	if (position.z < 0)
 	{
-		velocity.z = -velocity.y * restitution;
+		velocity.z = -velocity.z * restitution;
 	}
 	timeToLive -= deltaTime;
 

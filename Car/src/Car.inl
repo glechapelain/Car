@@ -73,7 +73,7 @@ Vector2d<Units> const& Car<Units>::getPosition() const {
 }
 
 template <typename Units>
-Vector2d<Units> const& Car<Units>::getNextPosition() const {
+Vector2d<Units> Car<Units>::getNextPosition() const {
     return position + velocity;
 }
 

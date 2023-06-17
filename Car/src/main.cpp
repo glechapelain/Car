@@ -185,22 +185,22 @@ int main(void)
 						if (car.getNextPosition() != car.getPosition()
 							&& car.collidesWith(circuit, positionOfImpact))
 						{
-							car.setPositionToClosestPointOnCircuit(circuit);
-							car.zeroSpeed();
-
 							int numOfParticlesToGenerate = GetRandomValue(60, 80);
 							while (numOfParticlesToGenerate > 0)
 							{
-								Vector3d<float> variation(float(GetRandomValue(60, 80))/70.f,
-									float(GetRandomValue(60, 80)) / 70.f,
-									float(GetRandomValue(60, 80)) / 70.f);
-								Vector3d<float> initialVelocity(car.getVelocity().x, car.getVelocity().y, 1.f);
+								Vector3d<float> variation(float(GetRandomValue(10, 130))/70.f,
+									float(GetRandomValue(10, 130)) / 70.f,
+									float(GetRandomValue(10, 130)) / 70.f);
+								Vector3d<float> initialVelocity(car.getVelocity().x, car.getVelocity().y, .15f);
 								initialVelocity *= variation;
-								Vector3d<float> positionOfImpact3D(positionOfImpact.x, positionOfImpact.y, 1.f * carScale);
-								particles.emplace_back(positionOfImpact3D, initialVelocity * float(gridUnit), float(GetRandomValue(32, 55)) / 10.f);
+								Vector3d<float> positionOfImpact3D(positionOfImpact.x, positionOfImpact.y, .15f);
+								particles.emplace_back(positionOfImpact3D + (variation - Vector3d<float>(1.f, 1.f, 1.f)) * carScale, initialVelocity * float(gridUnit), float(GetRandomValue(8, 32)) / 10.f);
 
 								--numOfParticlesToGenerate;
 							}
+
+							car.setPositionToClosestPointOnCircuit(circuit);
+							car.zeroSpeed();
 						}
 						car.update(circuit);
 						if (car.isFinished())
@@ -227,27 +227,31 @@ int main(void)
 
 				circuit.render();
 
+				// render particle shadows
+				Vector3d/* just 3 for the maths. */<float> lightDirection = {4.f, -3.f, .0f};
+				for (Particle const& particle : particles)
+				{
+					Vector3d<float> shadowPosition = particle.getPosition() + lightDirection * particle.getPosition().z;
+					DrawCircle(shadowPosition.x, shadowPosition.y, 1.f, BLACK);
+				}
+
 				BeginMode3D(camera);
 				{
-					// render particle shadows
-					Vector3d/* just 3 for the maths. */<float> lightDirection = {.4f, .3f, .0f};
-					for (Particle const& particle : particles)
-					{
-						Vector3d<float> shadowPosition = particle.getPosition() + lightDirection * particle.getPosition().z;
-						DrawCircle(shadowPosition.x, shadowPosition.y, 1.f, DARKGRAY);
-					}
-
 					//for (auto const& car : cars)
 					{
 						car.graphics->Render(Vector3{ float(car.getPosition().x * gridUnit), .5f, float(car.getPosition().y * gridUnit)}, car.getOrientation(), carScale);
 					}
-
-					for (Particle const& particle : particles)
-					{
-						DrawCircle(particle.getPosition().x, particle.getPosition().y, 1.f, ORANGE);
-					}
 				}
 				EndMode3D();
+
+				for (std::list<Particle>::iterator particleIt = particles.begin(); particles.end()!= particleIt;)
+				{
+					DrawCircle(particleIt->getPosition().x, particleIt->getPosition().y, 1.f, ORANGE);
+					if (!particleIt->update(GetFrameTime()))
+						particleIt = particles.erase(particleIt);
+					else
+						particleIt = ++particleIt;
+				}
 
 				//for (auto const& car : cars)
 				{
